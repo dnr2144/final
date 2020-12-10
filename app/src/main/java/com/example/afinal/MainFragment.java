@@ -151,6 +151,7 @@ public class MainFragment extends Fragment {
             case R.id.delete:
                 SQLiteDatabase sqLiteDatabase = myDBHelper.getWritableDatabase();
                 sqLiteDatabase.execSQL("Delete FROM friendsDB WHERE name = '" + this.focusName + "';");
+                sqLiteDatabase.close();
                 this.mainFragmentListener.refreshMainFragment();
                 return true;
             default:

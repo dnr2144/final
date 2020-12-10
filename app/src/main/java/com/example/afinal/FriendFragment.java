@@ -19,11 +19,12 @@ import androidx.fragment.app.Fragment;
 
 public class FriendFragment extends Fragment {
 
-    EditText name, phone, birth;
-    Button btnSave;
-    Context mContext;
-    String type;
-    String focusName, focusPhone, focusBirth;
+    private EditText name, phone, birth;
+    private Button btnSave;
+    private Context mContext;
+    private String type;
+    private String focusName, focusPhone, focusBirth;
+    private MainActivity.MyDBHelper myDBHelper;
 
     public FriendFragment() { ; }
 
@@ -73,17 +74,15 @@ public class FriendFragment extends Fragment {
         this.btnSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                myDBHelper = new MainActivity.MyDBHelper((MainActivity)mContext);
+                SQLiteDatabase sqLiteDatabase = myDBHelper.getWritableDatabase();
 
                 if(type.equals("ADD")) {
                     if(!name.getText().toString().equals(" ") && !phone.getText().toString().equals(" ") && !birth.getText().toString().equals(" ")) {
                         try {
-                            MainActivity.MyDBHelper myDBHelper = new MainActivity.MyDBHelper((MainActivity)mContext);
-                            SQLiteDatabase sqLiteDatabase = myDBHelper.getWritableDatabase();
                             sqLiteDatabase.execSQL("INSERT INTO friendsDB VALUES ('" + name.getText().toString() + "', '" + phone.getText().toString() + "', '"  + birth.getText().toString() + "');");
-                            sqLiteDatabase.close();
                             Toast.makeText(getActivity(),name.getText() + ", " + phone.getText() + ", " + birth.getText() + "가 성공적으로 저장되었습니다.", Toast.LENGTH_SHORT).show();
-                            ((AddFragmentListener) mContext).finishAddFragment();
-                            Log.i("과연 Type은??", type);
+                            Log.i("과연 Type은??", type + ", " + name.getText().toString().equals(" ") + ", " + phone.getText().toString().equals(" ") + ", " + birth.getText().toString().equals(" "));
                         } catch (SQLiteConstraintException ex) {
                             Toast.makeText(getActivity(),"이름이 중복됩니다.", Toast.LENGTH_LONG).show();
                         }
@@ -92,9 +91,17 @@ public class FriendFragment extends Fragment {
                         Toast.makeText(getActivity(),"내용을 전부 채워주세요", Toast.LENGTH_LONG).show();
                     }
                 } else if(type.equals("EDIT")) {
+                    try{
+                        sqLiteDatabase.execSQL("UPDATE friendsDB set name = '" + name.getText() + "', phone = '" + phone.getText() + "', birthday = '" + birth.getText() + "';");
+                        //update employee set name = 'raccoon' where id = 3;
 
+                    } catch (SQLiteConstraintException ex) {
+                        Toast.makeText(getActivity(),"이름이 중복됩니다.", Toast.LENGTH_LONG).show();
+                    }
                 }
 
+                ((AddFragmentListener) mContext).finishAddFragment();
+                sqLiteDatabase.close();
             }
         });
 
