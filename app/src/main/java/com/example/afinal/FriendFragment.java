@@ -78,12 +78,14 @@ public class FriendFragment extends Fragment {
                 SQLiteDatabase sqLiteDatabase = myDBHelper.getWritableDatabase();
 
                 if(type.equals("ADD")) {
-                    if(!name.getText().toString().equals(" ") && !phone.getText().toString().equals(" ") && !birth.getText().toString().equals(" ")) {
+                    if(!name.getText().toString().equals("") && !phone.getText().toString().equals("") && !birth.getText().toString().equals("")) {
                         try {
+                            Log.i("FriendFragment In ADD", name.getText() + ", " + phone.getText() + ", " + birth.getText());
                             sqLiteDatabase.execSQL("INSERT INTO friendsDB VALUES ('" + name.getText().toString() + "', '" + phone.getText().toString() + "', '"  + birth.getText().toString() + "');");
                             Toast.makeText(getActivity(),name.getText() + ", " + phone.getText() + ", " + birth.getText() + "가 성공적으로 저장되었습니다.", Toast.LENGTH_SHORT).show();
-                            Log.i("과연 Type은??", type + ", " + name.getText().toString().equals(" ") + ", " + phone.getText().toString().equals(" ") + ", " + birth.getText().toString().equals(" "));
+                            ((AddFragmentListener) mContext).finishAddFragment();
                         } catch (SQLiteConstraintException ex) {
+                            Log.i("FriendFragment In ADD", name.getText() + ", " + phone.getText() + ", " + birth.getText());
                             Toast.makeText(getActivity(),"이름이 중복됩니다.", Toast.LENGTH_LONG).show();
                         }
 
@@ -92,15 +94,17 @@ public class FriendFragment extends Fragment {
                     }
                 } else if(type.equals("EDIT")) {
                     try{
-                        sqLiteDatabase.execSQL("UPDATE friendsDB set name = '" + name.getText() + "', phone = '" + phone.getText() + "', birthday = '" + birth.getText() + "';");
-                        //update employee set name = 'raccoon' where id = 3;
+                        sqLiteDatabase.execSQL("UPDATE friendsDB set name = '" + name.getText() + "', phone = '" + phone.getText() + "', birthday = '" + birth.getText() + "' WHERE name = '" + focusName + "';");
+                        Toast.makeText(getActivity(),name.getText() + ", " + phone.getText() + ", " + birth.getText() + "가 성공적으로 저장되었습니다.", Toast.LENGTH_SHORT).show();
+                        ((AddFragmentListener) mContext).finishAddFragment();
 
                     } catch (SQLiteConstraintException ex) {
+                        Log.i("FriendFragment In ADD", name.getText() + ", " + phone.getText() + ", " + birth.getText());
                         Toast.makeText(getActivity(),"이름이 중복됩니다.", Toast.LENGTH_LONG).show();
                     }
                 }
 
-                ((AddFragmentListener) mContext).finishAddFragment();
+
                 sqLiteDatabase.close();
             }
         });

@@ -16,7 +16,11 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Adapter;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -30,9 +34,10 @@ import java.util.List;
 public class MainFragment extends Fragment {
     private Context mContext;
     private MainFragmentListener mainFragmentListener;
-    private List<TextView> nameList;
-    private LinearLayout mainLinearLayout;
-    private List<LinearLayout> linearLayoutList;
+    //private ArrayList<TextView> nameList;
+    private List<String> nameList;
+    private ListView listView;
+    private ArrayAdapter adapter;
     private String focusName;
     private String focusPhone;
     private String focusBirth;
@@ -58,9 +63,19 @@ public class MainFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.list_friend, container, false);
 
-        this.mainLinearLayout = (LinearLayout) view.findViewById(R.id.mainLinearLayout);
-        this.linearLayoutList = new ArrayList<LinearLayout>();
-        this.nameList = new ArrayList<TextView>();
+        this.nameList = new ArrayList<String>();
+
+        this.adapter = new ArrayAdapter(getActivity(), android.R.layout.simple_list_item_1, nameList);
+        this.listView = (ListView) view.findViewById(R.id.listView1);
+        this.listView.setAdapter(adapter);
+        registerForContextMenu(listView);
+
+        this.listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+            }
+        });
 
         myDBHelper = new MainActivity.MyDBHelper((MainActivity)mContext);
         SQLiteDatabase sqLiteDatabase = myDBHelper.getReadableDatabase();
@@ -69,8 +84,8 @@ public class MainFragment extends Fragment {
         String name;
 
         while(cursor.moveToNext()) {
-            name = cursor.getString(0);
-            createTextView(name);
+            nameList.add(cursor.getString(0));
+            //createTextView(name);
         }
 
         cursor.close();
@@ -79,29 +94,17 @@ public class MainFragment extends Fragment {
     }
 
     public void createTextView(String name) {
-        LinearLayout linearLayout = new LinearLayout(getActivity());
         TextView nameTV = new TextView(getActivity());
 
-        linearLayout.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 130));
-        linearLayout.setOrientation(LinearLayout.HORIZONTAL);
-
         nameTV.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 130));
-
         nameTV.setTextSize(15);
-
         nameTV.setGravity(Gravity.CENTER);
-
         nameTV.setTypeface(null, Typeface.BOLD_ITALIC);
-
         nameTV.setText(name);
 
-        this.nameList.add(nameTV);
+        //this.nameList.add(nameTV);
 
-        linearLayout.addView(nameTV);
-
-        this.linearLayoutList.add(linearLayout);
-        this.mainLinearLayout.addView(linearLayout);
-        registerForContextMenu(linearLayout);
+        //registerForContextMenu(this.listView);
     }
 
     public void onCreateOptionsMenu(Menu menu, MenuInflater menuInflater) {
@@ -121,21 +124,27 @@ public class MainFragment extends Fragment {
         return false;
     }
 
+
+
     @Override
     public void onCreateContextMenu(@NonNull ContextMenu menu, @NonNull View v, @Nullable ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
         getActivity().getMenuInflater().inflate(R.menu.context, menu);
 
-        this.focusName = ((TextView)((LinearLayout) v).getChildAt(0)).getText().toString();
+        focusName = (String) nameList.get(((AdapterView.AdapterContextMenuInfo)menuInfo).position);
 
         SQLiteDatabase sqLiteDatabase = myDBHelper.getReadableDatabase();
-        Cursor cursor = sqLiteDatabase.rawQuery("SELECT phone, birthday FROM friendsDB WHERE name = '" + this.focusName + "';", null);
+        Cursor cursor = sqLiteDatabase.rawQuery("SELECT phone, birthday FROM friendsDB WHERE name = '" + focusName + "';", null);
         cursor.moveToNext();
 
-        this.focusPhone = cursor.getString(0);
-        this.focusBirth = cursor.getString(1);
+        focusPhone = cursor.getString(0);
+        focusBirth = cursor.getString(1);
 
         Log.i("View group", focusName + ", " + focusPhone + ", " + focusBirth);
+
+        Log.i("ListView Index", nameList.get(((AdapterView.AdapterContextMenuInfo)menuInfo).position));
+
+
     }
 
     @Override
@@ -146,7 +155,7 @@ public class MainFragment extends Fragment {
                 Log.i("Long Click", item.toString());
                 return true;
             case R.id.edit:
-                mainFragmentListener.goFriend("EDIT", this.focusName.toString(), this.focusPhone, this.focusBirth);
+                mainFragmentListener.goFriend("EDIT", this.focusName, this.focusPhone, this.focusBirth);
                 return true;
             case R.id.delete:
                 SQLiteDatabase sqLiteDatabase = myDBHelper.getWritableDatabase();

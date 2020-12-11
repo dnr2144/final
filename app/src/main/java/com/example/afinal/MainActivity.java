@@ -18,6 +18,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.Main
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        setTitle("친구 목록 관리");
         this.backPressCloseHandler = new BackPressCloseHandler(MainActivity.this);
 
         mainFragment = new MainFragment();
